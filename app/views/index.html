@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Block</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism.min.css">
+  <style>
+    .codeblock {
+      position: relative;
+      width: 100%;
+      background-color: #333;
+      font-family: sans-serif;
+    }
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #333;
+      padding: 0.5rem 1rem;
+      color: #fff;
+    }
+    .code-content {
+      margin: 0;
+      width: 100%;
+      background: transparent;
+      font-size: 14px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+  function generateRandomString(length, lowercase = false) {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXY3456789";
+    let result = "";
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return lowercase ? result.toLowerCase() : result;
+  }
+
+  const programmingLanguages = {
+    javascript: ".js",
+    python: ".py",
+    java: ".java",
+    c: ".c",
+    cpp: ".cpp",
+    "c++": ".cpp",
+    "c#": ".cs",
+    ruby: ".rb",
+    php: ".php",
+    swift: ".swift",
+    "objective-c": ".m",
+    kotlin: ".kt",
+    typescript: ".ts",
+    go: ".go",
+    perl: ".pl",
+    rust: ".rs",
+    scala: ".scala",
+    haskell: ".hs",
+    lua: ".lua",
+    shell: ".sh",
+    sql: ".sql",
+    html: ".html",
+    css: ".css"
+  };
+
+  function useCopyToClipboard(options) {
+    const { timeout } = options;
+    let isCopied = false;
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text)
+        .then(() => {
+          isCopied = true;
+          setTimeout(() => {
+            isCopied = false;
+          }, timeout);
+        })
+        .catch(err => {
+          console.error('Failed to copy: ', err);
+        });
+    }
+
+    return { isCopied, copyToClipboard };
+  }
+
+  function MessageCodeBlock(language, value) {
+    const { isCopied, copyToClipboard } = useCopyToClipboard({ timeout: 2000 });
+
+    function downloadAsFile() {
+      if (typeof window === "undefined") {
+        return;
+      }
+      const fileExtension = programmingLanguages[language] || ".file";
+      const suggestedFileName = `file-${generateRandomString(3, true)}${fileExtension}`;
+      const fileName = window.prompt("Enter file name", suggestedFileName);
+
+      if (!fileName) {
+        return;
+      }
+
+      const blob = new Blob([value], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = fileName;
+      link.href = url;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    function onCopy() {
+      if (isCopied) return;
+      copyToClipboard(value);
+    }
+
+    const codeContent = document.createElement('code');
+    codeContent.innerText = value;
+    codeContent.setAttribute('class', `language-${language}`);
+
+    const pre = document.createElement('pre');
+    pre.appendChild(codeContent);
+    pre.setAttribute('class', 'code-content');
+
+    const languageSpan = document.createElement('span');
+    languageSpan.innerText = language;
+    languageSpan.setAttribute('class', 'text-xs lowercase');
+
+    const downloadButton = document.createElement('button');
+    downloadButton.setAttribute('class', 'btn');
+    downloadButton.setAttribute('type', 'button');
+    downloadButton.innerHTML = '<i class="icon-download"></i>';
+    downloadButton.addEventListener('click', downloadAsFile);
+
+    const copyButton = document.createElement('button');
+    copyButton.setAttribute('class', 'btn');
+    copyButton.setAttribute('type', 'button');
+    copyButton.innerHTML = isCopied ? '<i class="icon-check"></i>' : '<i class="icon-copy"></i>';
+    copyButton.addEventListener('click', onCopy);
+
+    const header = document.createElement('div');
+    header.setAttribute('class', 'code-header');
+    header.appendChild(languageSpan);
+    header.appendChild(downloadButton);
+    header.appendChild(copyButton);
+
+    const container = document.createElement('div');
+    container.setAttribute('class', 'codeblock relative w-full bg-zinc-950 font-sans');
+    container.appendChild(header);
+    container.appendChild(pre);
+
+    return container;
+  }
+
+  const codeContainer = MessageCodeBlock('javascript', `function sayHello() {
+  console.log('Hello, world!');
+}`);
+
+  document.getElementById('app').appendChild(codeContainer);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,10 @@
+appdirs
+click
+fastapi
+passlib
+python-jose
+python-multipart
+requests
+rich
+socketify
+sqlmodel
